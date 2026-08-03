@@ -53,9 +53,9 @@
           <a-entity id="cat-model"
                     gltf-model="url(https://static.poly.pizza/67f5e3fe-37ee-4c86-95c8-d269d8c9f8ba.glb)"
                     position="0 0 0" rotation="0 0 0" scale="0.5 0.5 0.5"></a-entity>
-          <a-entity id="face" position="0 0.35 0.22">
-            <a-sphere id="eye-l" radius="0.045" color="#1a1a1a" position="-0.09 0 0"></a-sphere>
-            <a-sphere id="eye-r" radius="0.045" color="#1a1a1a" position="0.09 0 0"></a-sphere>
+          <a-entity id="face" position="0 0.35 0.32">
+            <a-sphere id="eye-l" radius="0.06" color="#1a1a1a" position="-0.1 0 0" segments-width="24" segments-height="24"></a-sphere>
+            <a-sphere id="eye-r" radius="0.06" color="#1a1a1a" position="0.1 0 0" segments-width="24" segments-height="24"></a-sphere>
           </a-entity>
         </a-entity>
 
@@ -67,7 +67,7 @@
 
     <a-entity light="type: ambient; intensity: 0.9"></a-entity>
     <a-entity light="type: directional; intensity: 0.6" position="1 2 1"></a-entity>
-    <a-entity camera cursor="rayOrigin: mouse; fuse: false" raycaster="objects: .clickable"></a-entity>
+    <a-entity id="cam" camera cursor="rayOrigin: mouse; fuse: false" raycaster="objects: .clickable"></a-entity>
   </a-scene>
 
   <script>
@@ -330,7 +330,7 @@
         }
       }
 
-      petEl.addEventListener('click', pet);
+      document.getElementById('cam').addEventListener('click', pet);
       document.getElementById('feed-btn').addEventListener('click', feed);
     })();
   </script>
