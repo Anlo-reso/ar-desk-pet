@@ -108,13 +108,29 @@
 
       var mixer = null;
       var clock = new THREE.Clock();
+      var CAT_COLOR = '#EF9F27';
 
       catModelEl.addEventListener('model-loaded', function (e) {
         var model = e.detail.model;
-        if (model && model.animations && model.animations.length) {
-          mixer = new THREE.AnimationMixer(model);
-          var action = mixer.clipAction(model.animations[0]);
-          action.play();
+        if (!model) return;
+
+        model.traverse(function (node) {
+          if (node.isMesh && node.material) {
+            var mats = Array.isArray(node.material) ? node.material : [node.material];
+            mats.forEach(function (m) {
+              if (m.color) m.color.set(CAT_COLOR);
+            });
+          }
+        });
+
+        if (model.animations && model.animations.length) {
+          var safeClip = model.animations.find(function (c) {
+            return /idle|walk|sit|stand/i.test(c.name);
+          });
+          if (safeClip) {
+            mixer = new THREE.AnimationMixer(model);
+            mixer.clipAction(safeClip).play();
+          }
         }
       });
 
