@@ -6,6 +6,7 @@
   <title>AR Desk Pet</title>
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
   <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/aframe-extras@7.2.0/dist/aframe-extras.min.js"></script>
   <style>
     html, body { margin: 0; height: 100%; overflow: hidden; font-family: -apple-system, sans-serif; }
     #hud {
@@ -34,30 +35,27 @@
   <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;" vr-mode-ui="enabled: false" renderer="logarithmicDepthBuffer: true;">
 
     <a-marker preset="hiro" id="marker">
-      <a-entity id="pet" position="0 0.6 0" scale="1 1 1">
-        <!-- body -->
-        <a-sphere id="body" radius="0.5" color="#7ee8c7" segments-height="18" segments-width="18"
+      <a-entity id="pet" position="0 0 0" scale="1 1 1">
+        <!-- animated fox, CC0 model (Khronos glTF sample assets) -->
+        <a-entity id="fox"
+                  gltf-model="url(https://cdn.jsdelivr.net/gh/KhronosGroup/glTF-Sample-Models/2.0/Fox/glTF-Binary/Fox.glb)"
+                  animation-mixer="loop: repeat; timeScale: 1"
+                  scale="0.012 0.012 0.012"
+                  rotation="0 200 0"
+                  position="0 0 0"
                   animation="property: position; dir: alternate; dur: 900; easing: easeInOutSine; to: 0 0.15 0; loop: true">
-        </a-sphere>
-        <!-- eyes -->
-        <a-sphere radius="0.08" color="#1e1e1e" position="-0.18 0.15 0.42"></a-sphere>
-        <a-sphere radius="0.08" color="#1e1e1e" position="0.18 0.15 0.42"></a-sphere>
-        <!-- ears -->
-        <a-cone radius-bottom="0.14" radius-top="0" height="0.3" color="#7ee8c7" position="-0.35 0.55 0" rotation="0 0 -20"></a-cone>
-        <a-cone radius-bottom="0.14" radius-top="0" height="0.3" color="#7ee8c7" position="0.35 0.55 0" rotation="0 0 20"></a-cone>
-        <!-- cheeks -->
-        <a-circle radius="0.07" color="#ff9fb0" position="-0.33 0.02 0.4" rotation="0 0 0" material="shader: flat; opacity: 0.85"></a-circle>
-        <a-circle radius="0.07" color="#ff9fb0" position="0.33 0.02 0.4" rotation="0 0 0" material="shader: flat; opacity: 0.85"></a-circle>
+        </a-entity>
       </a-entity>
     </a-marker>
 
+    <a-entity light="type: ambient; intensity: 0.9"></a-entity>
+    <a-entity light="type: directional; intensity: 0.6" position="1 2 1"></a-entity>
     <a-entity camera></a-entity>
   </a-scene>
 
   <script>
     let hearts = 0;
     let level = 1;
-    const colors = ['#7ee8c7', '#ffd166', '#ef476f', '#8ecae6', '#c77dff'];
 
     const heartsEl = document.getElementById('hearts');
     const levelEl = document.getElementById('level');
@@ -84,7 +82,7 @@
       beep(500 + hearts * 8);
 
       const pet = document.getElementById('pet');
-      const body = document.getElementById('body');
+      const fox = document.getElementById('fox');
 
       // pulse scale
       pet.setAttribute('animation__pulse', {
@@ -105,14 +103,13 @@
         easing: 'easeOutQuad'
       });
 
-      // level up every 5 feeds: grow + change color
+      // level up every 5 feeds: grow + get more energetic (faster animation)
       if (hearts % 5 === 0) {
         level += 1;
         levelEl.textContent = `Level ${level}`;
-        const newColor = colors[level % colors.length];
-        body.setAttribute('color', newColor);
         const currentScale = 1 + (level - 1) * 0.08;
         pet.setAttribute('scale', `${currentScale} ${currentScale} ${currentScale}`);
+        fox.setAttribute('animation-mixer', `loop: repeat; timeScale: ${1 + (level - 1) * 0.25}`);
         beep(800, 0.25);
       }
 
@@ -120,7 +117,6 @@
     }
 
     function spawnFloatingHeart() {
-      const scene = document.querySelector('a-scene');
       const marker = document.getElementById('marker');
       const fx = document.createElement('a-text');
       const dx = (Math.random() - 0.5) * 0.6;
