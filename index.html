@@ -49,46 +49,15 @@
     <a-marker preset="hiro" id="marker">
       <a-entity id="pet" class="clickable" position="0 0 0" scale="1 1 1">
 
-        <a-torus id="tail" color="#BA7517" radius="0.32" radius-tubular="0.045" arc="150"
-                 position="0.5 0.2 -0.05" rotation="90 0 30"></a-torus>
-
-        <a-sphere id="body" radius="0.42" color="#EF9F27" position="0 0.25 0" scale="1 0.85 1.1"
-                  animation="property: scale; dir: alternate; dur: 1400; easing: easeInOutSine; to: 1 0.92 1.1; loop: true"></a-sphere>
-
-        <a-sphere radius="0.3" color="#FAEEDA" position="0 0.14 0.3" scale="0.8 0.65 0.5"></a-sphere>
-
-        <a-sphere id="paw-l" radius="0.11" color="#FAEEDA" position="-0.18 0.02 0.42"></a-sphere>
-        <a-sphere id="paw-r" radius="0.11" color="#FAEEDA" position="0.18 0.02 0.42"></a-sphere>
-
-        <a-torus id="bandana" color="#D4537E" radius="0.24" radius-tubular="0.035"
-                  position="0 0.38 0.12" rotation="85 0 0" scale="0.001 0.001 0.001"></a-torus>
-        <a-sphere id="bell" radius="0.045" color="#F0997B" position="0 0.2 0.4" scale="0.001 0.001 0.001"></a-sphere>
-
-        <a-entity id="head" position="0 0.62 0.1" look-toward="target: [camera]; maxDeg: 22; speed: 0.05">
-          <a-sphere radius="0.32" color="#EF9F27"></a-sphere>
-
-          <a-cone radius-bottom="0.13" radius-top="0" height="0.22" color="#BA7517" position="-0.22 0.32 0" rotation="0 0 -25"></a-cone>
-          <a-cone radius-bottom="0.13" radius-top="0" height="0.22" color="#BA7517" position="0.22 0.32 0" rotation="0 0 25"></a-cone>
-          <a-cone radius-bottom="0.08" radius-top="0" height="0.13" color="#F5C4B3" position="-0.22 0.3 0.03" rotation="0 0 -25"></a-cone>
-          <a-cone radius-bottom="0.08" radius-top="0" height="0.13" color="#F5C4B3" position="0.22 0.3 0.03" rotation="0 0 25"></a-cone>
-
-          <a-sphere radius="0.19" color="#FAEEDA" position="0 -0.08 0.22" scale="1 0.7 0.75"></a-sphere>
-
-          <a-entity id="eyes" position="0 0.05 0.28" scale="1 1 1">
-            <a-sphere radius="0.05" color="#639922" position="-0.12 0 0"></a-sphere>
-            <a-sphere radius="0.05" color="#639922" position="0.12 0 0"></a-sphere>
-            <a-sphere id="pupil-l" radius="0.022" color="#173404" position="-0.12 0 0.035"></a-sphere>
-            <a-sphere id="pupil-r" radius="0.022" color="#173404" position="0.12 0 0.035"></a-sphere>
-          </a-entity>
-
-          <a-cone radius-bottom="0.025" radius-top="0" height="0.03" color="#D85A30" position="0 -0.03 0.34" rotation="90 0 0"></a-cone>
-          <a-sphere id="yawn-mouth" radius="0.055" color="#4A1B0C" position="0 -0.1 0.3" scale="0.001 0.001 0.001"></a-sphere>
-
-          <a-cylinder radius="0.004" height="0.22" color="#4A1B0C" position="-0.28 -0.02 0.22" rotation="0 0 100"></a-cylinder>
-          <a-cylinder radius="0.004" height="0.22" color="#4A1B0C" position="-0.28 -0.06 0.2" rotation="0 0 95"></a-cylinder>
-          <a-cylinder radius="0.004" height="0.22" color="#4A1B0C" position="0.28 -0.02 0.22" rotation="0 0 80"></a-cylinder>
-          <a-cylinder radius="0.004" height="0.22" color="#4A1B0C" position="0.28 -0.06 0.2" rotation="0 0 85"></a-cylinder>
+        <a-entity id="model-wrap" look-toward="target: [camera]; maxDeg: 18; speed: 0.04">
+          <a-entity id="cat-model"
+                    gltf-model="url(https://static.poly.pizza/67f5e3fe-37ee-4c86-95c8-d269d8c9f8ba.glb)"
+                    position="0 0 0" rotation="0 0 0" scale="0.5 0.5 0.5"></a-entity>
         </a-entity>
+
+        <a-torus id="bandana" color="#D4537E" radius="0.14" radius-tubular="0.022"
+                 position="0 0.3 0.08" rotation="85 0 0" scale="0.001 0.001 0.001"></a-torus>
+        <a-sphere id="bell" radius="0.028" color="#F0997B" position="0 0.18 0.15" scale="0.001 0.001 0.001"></a-sphere>
       </a-entity>
     </a-marker>
 
@@ -101,7 +70,7 @@
     var THREE = AFRAME.THREE;
 
     AFRAME.registerComponent('look-toward', {
-      schema: { target: { type: 'selector' }, maxDeg: { default: 22 }, speed: { default: 0.05 } },
+      schema: { target: { type: 'selector' }, maxDeg: { default: 20 }, speed: { default: 0.05 } },
       init: function () {
         this.tmpA = new THREE.Vector3();
         this.tmpB = new THREE.Vector3();
@@ -133,12 +102,26 @@
       var moodEl = document.getElementById('mood-label');
       var marker = document.getElementById('marker');
       var petEl = document.getElementById('pet');
-      var tail = document.getElementById('tail');
-      var pawR = document.getElementById('paw-r');
-      var eyes = document.getElementById('eyes');
-      var yawnMouth = document.getElementById('yawn-mouth');
+      var catModelEl = document.getElementById('cat-model');
       var bandana = document.getElementById('bandana');
       var bell = document.getElementById('bell');
+
+      var mixer = null;
+      var clock = new THREE.Clock();
+
+      catModelEl.addEventListener('model-loaded', function (e) {
+        var model = e.detail.model;
+        if (model && model.animations && model.animations.length) {
+          mixer = new THREE.AnimationMixer(model);
+          var action = mixer.clipAction(model.animations[0]);
+          action.play();
+        }
+      });
+
+      (function animate() {
+        if (mixer) mixer.update(clock.getDelta());
+        requestAnimationFrame(animate);
+      })();
 
       function beep(freq, dur) {
         freq = freq || 520; dur = dur || 0.12;
@@ -177,15 +160,10 @@
         s.setAttribute('radius', '0.05');
         s.setAttribute('color', '#993C1D');
         s.setAttribute('position', '0 0 0.5');
-        s.setAttribute('animation', 'property: position; to: 0 0.62 0.2; dur: 400; easing: easeInQuad');
+        s.setAttribute('animation', 'property: position; to: 0 0.4 0.15; dur: 400; easing: easeInQuad');
         s.setAttribute('animation__fade', 'property: opacity; to: 0; dur: 150; delay: 300');
         marker.appendChild(s);
         setTimeout(function () { s.remove(); }, 500);
-      }
-
-      function blink(scaleY, ms) {
-        eyes.setAttribute('scale', '1 ' + scaleY + ' 1');
-        setTimeout(function () { eyes.setAttribute('scale', '1 1 1'); }, ms);
       }
 
       var idleState = 'active';
@@ -195,8 +173,7 @@
       function wake() {
         if (zzzTimer) { clearInterval(zzzTimer); zzzTimer = null; }
         petEl.setAttribute('scale', scale + ' ' + scale + ' ' + scale);
-        tail.setAttribute('rotation', '90 0 30');
-        eyes.setAttribute('scale', '1 1 1');
+        if (mixer) mixer.timeScale = 1;
       }
 
       function resetIdle() {
@@ -207,29 +184,27 @@
 
       function groom() {
         setMood('bored');
-        pawR.setAttribute('animation__groom', {
-          property: 'position', to: '0.05 0.35 0.32', dur: 220, dir: 'alternate', loop: 1, easing: 'easeOutQuad'
+        var s = scale * 1.04;
+        petEl.setAttribute('animation__groom', {
+          property: 'scale', from: scale + ' ' + scale + ' ' + scale,
+          to: s + ' ' + s + ' ' + s, dir: 'alternate', dur: 250, loop: 2
         });
-        blink(0.2, 180);
       }
 
       function yawn() {
         setMood('hungry');
-        spawnText('meow?', '#ffffff', 1.0, 1.25, 800);
-        yawnMouth.setAttribute('animation__yawn', {
-          property: 'scale', to: '1 1 1', dur: 200, dir: 'alternate', loop: 1
-        });
-        blink(0.15, 600);
+        spawnText('meow?', '#ffffff', 0.7, 0.95, 800);
+        if (mixer) mixer.timeScale = 0.5;
+        setTimeout(function () { if (mixer && idleState !== 'napping') mixer.timeScale = 1; }, 700);
       }
 
       function nap() {
         idleState = 'napping';
         setMood('sleeping');
         petEl.setAttribute('scale', (scale * 0.94) + ' ' + (scale * 0.94) + ' ' + (scale * 0.94));
-        tail.setAttribute('rotation', '90 0 80');
-        eyes.setAttribute('scale', '1 0.1 1');
-        spawnText('z', '#dddddd', 1.0, 1.4, 1300);
-        zzzTimer = setInterval(function () { spawnText('z', '#dddddd', 1.0, 1.4, 1300); }, 1300);
+        if (mixer) mixer.timeScale = 0.08;
+        spawnText('z', '#dddddd', 0.7, 1.1, 1300);
+        zzzTimer = setInterval(function () { spawnText('z', '#dddddd', 0.7, 1.1, 1300); }, 1300);
       }
 
       setInterval(function () {
@@ -238,7 +213,7 @@
         if (idleSec > 12) { nap(); }
         else if (idleSec > 7) {
           if (idleState !== 'hungry') { idleState = 'hungry'; yawn(); }
-          else if (Math.random() < 0.4) { spawnText('meow?', '#ffffff', 1.0, 1.25, 700); }
+          else if (Math.random() < 0.4) { spawnText('meow?', '#ffffff', 0.7, 0.95, 700); }
         } else if (idleSec > 3) {
           if (idleState !== 'bored') { idleState = 'bored'; groom(); }
         }
@@ -247,18 +222,14 @@
       function pet() {
         resetIdle();
         setMood('purring');
-        spawnText('purr...', '#ffffff', 1.0, 1.2, 600);
+        spawnText('purr...', '#ffffff', 0.7, 0.9, 600);
         beep(600, 0.08);
         var pulseScale = scale * 1.06;
         petEl.setAttribute('animation__pulse', {
           property: 'scale', from: scale + ' ' + scale + ' ' + scale,
           to: pulseScale + ' ' + pulseScale + ' ' + pulseScale, dur: 150, dir: 'alternate', loop: 1
         });
-        tail.setAttribute('animation__wag', {
-          property: 'rotation', from: '90 0 30', to: '90 0 60', dir: 'alternate', dur: 150, loop: 2
-        });
-        blink(0.2, 500);
-        spawnText('❤', '#ff5d8f', 0.9, 1.5, 900);
+        spawnText('❤', '#ff5d8f', 0.6, 1.2, 900);
         setTimeout(function () { setMood('content'); }, 500);
       }
 
@@ -295,8 +266,7 @@
         resetIdle();
         if (Math.random() < 0.3) {
           setMood('hmm...');
-          spawnText('hmm...', '#ffffff', 1.0, 1.2, 600);
-          blink(0.15, 500);
+          spawnText('hmm...', '#ffffff', 0.7, 0.9, 600);
           setTimeout(doEat, 650);
         } else {
           doEat();
@@ -305,14 +275,6 @@
 
       petEl.addEventListener('click', pet);
       document.getElementById('feed-btn').addEventListener('click', feed);
-
-      window.addEventListener('mousemove', function (e) {
-        var rel = (e.clientX / window.innerWidth - 0.5) * 2;
-        var pupilL = document.getElementById('pupil-l');
-        var pupilR = document.getElementById('pupil-r');
-        pupilL.setAttribute('position', (-0.12 + rel * 0.02) + ' 0 0.035');
-        pupilR.setAttribute('position', (0.12 + rel * 0.02) + ' 0 0.035');
-      });
     })();
   </script>
 </body>
