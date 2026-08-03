@@ -53,6 +53,10 @@
           <a-entity id="cat-model"
                     gltf-model="url(https://static.poly.pizza/67f5e3fe-37ee-4c86-95c8-d269d8c9f8ba.glb)"
                     position="0 0 0" rotation="0 0 0" scale="0.5 0.5 0.5"></a-entity>
+          <a-entity id="face" position="0 0.35 0.22">
+            <a-sphere id="eye-l" radius="0.045" color="#1a1a1a" position="-0.09 0 0"></a-sphere>
+            <a-sphere id="eye-r" radius="0.045" color="#1a1a1a" position="0.09 0 0"></a-sphere>
+          </a-entity>
         </a-entity>
 
         <a-torus id="bandana" color="#D4537E" radius="0.14" radius-tubular="0.022"
@@ -107,8 +111,12 @@
       var bell = document.getElementById('bell');
 
       var mixer = null;
+      var idleAction = null;
+      var sleepAction = null;
       var clock = new THREE.Clock();
       var CAT_COLOR = '#EF9F27';
+      var eyeL = document.getElementById('eye-l');
+      var eyeR = document.getElementById('eye-r');
 
       catModelEl.addEventListener('model-loaded', function (e) {
         var model = e.detail.model;
@@ -124,15 +132,27 @@
         });
 
         if (model.animations && model.animations.length) {
-          var safeClip = model.animations.find(function (c) {
-            return /idle|walk|sit|stand/i.test(c.name);
+          mixer = new THREE.AnimationMixer(model);
+          var idleClip = model.animations.find(function (c) {
+            return /idle|walk|stand/i.test(c.name);
           });
-          if (safeClip) {
-            mixer = new THREE.AnimationMixer(model);
-            mixer.clipAction(safeClip).play();
-          }
+          var sleepClip = model.animations.find(function (c) {
+            return /sleep|sit|lay|rest|down/i.test(c.name);
+          });
+          if (idleClip) { idleAction = mixer.clipAction(idleClip); idleAction.play(); }
+          if (sleepClip) { sleepAction = mixer.clipAction(sleepClip); }
         }
       });
+
+      function closeEyes() {
+        eyeL.setAttribute('scale', '1 0.12 1');
+        eyeR.setAttribute('scale', '1 0.12 1');
+      }
+
+      function openEyes() {
+        eyeL.setAttribute('scale', '1 1 1');
+        eyeR.setAttribute('scale', '1 1 1');
+      }
 
       (function animate() {
         if (mixer) mixer.update(clock.getDelta());
@@ -189,7 +209,14 @@
       function wake() {
         if (zzzTimer) { clearInterval(zzzTimer); zzzTimer = null; }
         petEl.setAttribute('scale', scale + ' ' + scale + ' ' + scale);
-        if (mixer) mixer.timeScale = 1;
+        openEyes();
+        if (mixer) {
+          mixer.timeScale = 1;
+          if (sleepAction && idleAction) {
+            sleepAction.fadeOut(0.3);
+            idleAction.reset().fadeIn(0.3).play();
+          }
+        }
       }
 
       function resetIdle() {
@@ -210,15 +237,27 @@
       function yawn() {
         setMood('hungry');
         spawnText('meow?', '#ffffff', 0.7, 0.95, 800);
+        closeEyes();
         if (mixer) mixer.timeScale = 0.5;
-        setTimeout(function () { if (mixer && idleState !== 'napping') mixer.timeScale = 1; }, 700);
+        setTimeout(function () {
+          openEyes();
+          if (mixer && idleState !== 'napping') mixer.timeScale = 1;
+        }, 700);
       }
 
       function nap() {
         idleState = 'napping';
         setMood('sleeping');
         petEl.setAttribute('scale', (scale * 0.94) + ' ' + (scale * 0.94) + ' ' + (scale * 0.94));
-        if (mixer) mixer.timeScale = 0.08;
+        closeEyes();
+        if (mixer) {
+          if (sleepAction && idleAction) {
+            idleAction.fadeOut(0.3);
+            sleepAction.reset().fadeIn(0.3).play();
+          } else {
+            mixer.timeScale = 0.08;
+          }
+        }
         spawnText('z', '#dddddd', 0.7, 1.1, 1300);
         zzzTimer = setInterval(function () { spawnText('z', '#dddddd', 0.7, 1.1, 1300); }, 1300);
       }
@@ -246,6 +285,8 @@
           to: pulseScale + ' ' + pulseScale + ' ' + pulseScale, dur: 150, dir: 'alternate', loop: 1
         });
         spawnText('❤', '#ff5d8f', 0.6, 1.2, 900);
+        closeEyes();
+        setTimeout(openEyes, 180);
         setTimeout(function () { setMood('content'); }, 500);
       }
 
