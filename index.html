@@ -24,10 +24,13 @@
       color: #fff; text-shadow: 0 1px 4px rgba(0,0,0,.6); z-index: 999;
       font-size: 14px; pointer-events: none;
     }
-    #feed-btn {
+    #btn-row {
       position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-      z-index: 999; pointer-events: auto; border: none; border-radius: 24px;
-      padding: 12px 28px; font-size: 16px; font-weight: 600;
+      z-index: 999; display: flex; gap: 10px;
+    }
+    #btn-row button {
+      pointer-events: auto; border: none; border-radius: 24px;
+      padding: 12px 24px; font-size: 16px; font-weight: 600;
       background: rgba(0,0,0,0.55); color: #fff;
     }
     #hearts { font-size: 18px; font-weight: 600; }
@@ -42,7 +45,10 @@
   </div>
   <div id="mood-label">curious</div>
   <div id="hint">Point at the Hiro marker · tap the cat to pet it</div>
-  <button id="feed-btn">Feed</button>
+  <div id="btn-row">
+    <button id="pet-btn">Pet</button>
+    <button id="feed-btn">Feed</button>
+  </div>
 
   <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;" vr-mode-ui="enabled: false" renderer="logarithmicDepthBuffer: true;">
 
@@ -191,6 +197,18 @@
         setTimeout(function () { el.remove(); }, dur);
       }
 
+      function spawnLingerHeart() {
+        var el = document.createElement('a-text');
+        el.setAttribute('value', '❤');
+        el.setAttribute('color', '#ff5d8f');
+        el.setAttribute('align', 'center');
+        el.setAttribute('scale', '0.5 0.5 0.5');
+        el.setAttribute('position', '0 0.62 0.3');
+        el.setAttribute('animation__fade', 'property: opacity; to: 0; dur: 500; delay: 1800; easing: linear');
+        marker.appendChild(el);
+        setTimeout(function () { el.remove(); }, 2300);
+      }
+
       function spawnSnack() {
         var s = document.createElement('a-sphere');
         s.setAttribute('radius', '0.05');
@@ -284,7 +302,7 @@
           property: 'scale', from: scale + ' ' + scale + ' ' + scale,
           to: pulseScale + ' ' + pulseScale + ' ' + pulseScale, dur: 150, dir: 'alternate', loop: 1
         });
-        spawnText('❤', '#ff5d8f', 0.6, 1.2, 900);
+        spawnLingerHeart();
         closeEyes();
         setTimeout(openEyes, 180);
         setTimeout(function () { setMood('content'); }, 500);
@@ -331,6 +349,7 @@
       }
 
       document.getElementById('cam').addEventListener('click', pet);
+      document.getElementById('pet-btn').addEventListener('click', pet);
       document.getElementById('feed-btn').addEventListener('click', feed);
     })();
   </script>
